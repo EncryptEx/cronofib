@@ -146,13 +146,15 @@ function updateSchedule() {
         for (let day = 1; day <= 5; day++) {
             const cell = row.insertCell(-1);
             if (schedule && schedule[day] && schedule[day][hour]) {
-                if (document.getElementById('showCapacity').checked) {
                 const [assig, group] = schedule[day][hour].split(' ');
-                const capacity = selectedAssigs[assig][group].capacity;
-                const strCapacity = capacity ? ` (${capacity.places_lliures}/${capacity.places_totals})` : "";
-                cell.innerHTML = `${schedule[day][hour]}<br>${strCapacity}`;
+                const strStyle = getStyle(`${assig}`);
+                if (document.getElementById('showCapacity').checked) {
+                    const capacity = selectedAssigs[assig][group].capacity;
+                    const strCapacity = capacity ? ` (${capacity.places_lliures}/${capacity.places_totals})` : "";
+                    cell.innerHTML = `<div ${strStyle}>${schedule[day][hour]}<br>${strCapacity}</div>`;
+                } else {
+                    cell.innerHTML = `<div ${strStyle}>${schedule[day][hour]}</div>`;
                 }
-                else cell.innerHTML = schedule[day][hour];
             } else {
                 cell.innerHTML = "";
             }
@@ -166,6 +168,83 @@ function updateSchedule() {
     } else {
         document.getElementById('scheduleSelector').textContent = "No s'han trobat horaris possibles";
     }
+}
+
+function string2color(str) {
+    // Calculate hash value
+    var hash = 5382;
+    for (var i = 0; i < str.length; ++i) {
+        hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    }
+
+    // Use the hash value to generate HSL values
+    var h = (hash % 360);       // Hue value between 0 and 360
+    var s = 80;                 // Saturation fixed at 80%
+    var l = 40 + (hash % 3)*20;   // Lightness varies oscillates between 40, 60 and 80
+
+    // Function to convert HSL to RGB
+    function hslToRgb(h, s, l) {
+        var r, g, b;
+
+        if (s == 0) {
+            r = g = b = l; // achromatic
+        } else {
+            var hue2rgb = function hue2rgb(p, q, t) {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    // Function to convert RGB to hex
+    function rgbToHex(r, g, b) {
+        return ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    }
+
+    // Convert HSL to RGB
+    var rgb = hslToRgb(h / 360, s / 100, l / 100);
+
+    // Convert RGB to hex
+    var col = rgbToHex(rgb[0], rgb[1], rgb[2]);
+
+    // Exceptions
+    var excepcions = {'AL-F': '#781919'};
+    if (excepcions[str] !== undefined) {
+        return excepcions[str];
+    }
+    return "#" + col;
+}
+
+
+function blackOverColor(bg) {
+    var r = parseInt(bg.substr(1, 2), 16);
+    var g = parseInt(bg.substr(3, 2), 16);
+    var b = parseInt(bg.substr(5, 2), 16);
+    return 0.213 * r + 0.715 * g + 0.072 * b > 127;
+}
+
+/**
+ * Estil d'una caixa d'horari
+ * @param str Nom de l'assignatura
+ * @returns {string} Retorna el parametre style per a una assignatura donada
+ */
+function getStyle(str)
+{
+    var bgcolor = string2color(str)
+    var color = blackOverColor(bgcolor) ? 'black' : 'white'
+    return 'style="padding:2px;background-color: ' + bgcolor + '; color: ' + color + '"'
 }
 
 // Sorting functions
@@ -191,7 +270,7 @@ function compareSchedules(a, b) {
                 }
             }
         }
-        return totalDeadHours/3.5;
+        return totalDeadHours / 3.5;
     }
     function calculateFreeDays(schedule) {
         let totalFreeDays = 0;
@@ -207,8 +286,8 @@ function compareSchedules(a, b) {
                 totalFreeDays++;
             }
         }
-        
-        return -totalFreeDays/2.5;
+
+        return -totalFreeDays / 2.5;
     }
 
     // each marks from 0 to 10 how important is to have less dead hours
@@ -218,7 +297,7 @@ function compareSchedules(a, b) {
     result += (calculateDeadHours(a) - calculateDeadHours(b)) * deadHours.value;
     result += (calculateFreeDays(a) - calculateFreeDays(b)) * freeDays.value;
 
-    
+
     return result;
 }
 
@@ -237,7 +316,7 @@ document.getElementById('nextSchedule').addEventListener('click', () => {
     updateSchedule();
 });
 
-window.addEventListener('keydown', function(event) {
+window.addEventListener('keydown', function (event) {
     switch (event.key) {
         case 'ArrowLeft':
             currentSchedule = (currentSchedule - 1 + schedules.length) % schedules.length;

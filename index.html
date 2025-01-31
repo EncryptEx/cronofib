@@ -46,7 +46,6 @@
             max-width: 500px;
             max-height: 100px;
             overflow-x: auto;
-
             font-size: 0.6em;
         }
 
@@ -67,16 +66,127 @@
                 flex: 1 0 100%;
             }
         }
+
+        /* Dropdown container */
+        .dropdown {
+            position: absolute;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            z-index: 1000;
+            display: none;
+            /* Hide by default */
+        }
+
+        .dropdown.show {
+            display: block;
+            /* Show when active */
+        }
+
+        .dropdown li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .dropdown li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .show {
+            display: block;
+        }
+
+        /* Assig containers */
+        .assig-container {
+            background-color: lightgrey;
+            border-radius: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(-20px);
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease, max-height 0.5s ease;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .assig-container.show {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 1000px;
+        }
+
+        .assig-container.collapsing {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            transition: max-height 0.5s ease, opacity 0.5s ease, margin 0.5s ease, padding 0.5s ease;
+        }
+
+        #selectedAssigsContainer {
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s ease;
+        }
+
+        .assig-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .assig-header h2 {
+            margin: 0;
+            line-height: 1;
+        }
+
+        .checkbox-container {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .checkbox-container.show {
+            opacity: 1;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.3s ease;
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+
+        .delete-btn:hover {
+            color: black;
+        }
+
+        .delete-btn::before {
+            content: "\00d7"; /* Unicode for multiplication sign, which looks like a cross */
+        }
     </style>
 </head>
 
 <body>
     <h1>⏳CronoFIB⏳</h1>
-    <p>Obté un bon horari!</p>
+    <p>Obtén un bon horari!</p>
 
-    <input type="text" id="searchBar" onkeyup="search()" onkeydown="checkForEnter(event)"
-        placeholder="Busca assignatures...">
-
+    <input type="text" id="searchBar" onkeyup="search()" onkeydown="checkForEnter(event)" placeholder="Busca assignatures...">
+    <div id="dropdown" class="dropdown"></div>
     <ul id="output"></ul>
     <div class="container">
         <div>
@@ -116,7 +226,6 @@
             <script src="scheduleManager.js"></script>
         </div>
     </div>
-
 </body>
 
 </html>
